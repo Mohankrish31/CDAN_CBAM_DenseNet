@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from models.cdan_cbam_densenet import CDAN_CBAM_DenseNet  # Make sure your model code is in model.py
 # ========================= SETTINGS =========================
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model_path = "best_model.pth"        # Path to your trained CDAN_CBAM_DenseNet checkpoint
+model_path = "cdan_cbam_densenet.pth"        # Path to your trained CDAN_CBAM_DenseNet checkpoint
 input_dir = "/content/cvccolondbsplit/train/low"           # Folder with images to enhance
 output_dir = "/content/outputs/train_enhanced"       # Folder to save enhanced outputs
 os.makedirs(output_dir, exist_ok=True)
