@@ -3,7 +3,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 import matplotlib.pyplot as plt
-from model import CDAN_CBAM_DenseNet  # Make sure your model code is in model.py
+from models.cdan_cbam_densenet import CDAN_CBAM_DenseNet  # Make sure your model code is in model.py
 # ========================= SETTINGS =========================
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 model_path = "best_model.pth"        # Path to your trained CDAN_CBAM_DenseNet checkpoint
