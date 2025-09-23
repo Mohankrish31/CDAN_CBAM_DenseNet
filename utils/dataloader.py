@@ -30,7 +30,13 @@ class cvccolondbsplitDataset(Dataset):
             high_img = self.transform(high_img)
 
         return low_img, high_img   # <-- input=low, target=high
-
+# ---------- Hyperparams ----------
+learning_rate = 1e-4
+weight_decay = 1e-5
+num_epochs = 100
+batch_size = 8
+early_stopping_patience = 10
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # === Define Transforms ===
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
