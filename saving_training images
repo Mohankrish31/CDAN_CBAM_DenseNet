@@ -1,0 +1,7 @@
+src_folder = '/content/outputs/train_enhanced'
+dest_folder = '/content/drive/MyDrive/Colon_Enhanced/train_enhanced'
+if os.path.exists(dest_folder):
+    print(f"Destination folder '{dest_folder}' exists. Removing it...")
+    shutil.rmtree(dest_folder)
+shutil.copytree(src_folder, dest_folder)
+print(f"✅ Enhanced output successfully copied to Google Drive: {dest_folder}")
