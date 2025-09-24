@@ -35,38 +35,7 @@ class cvccolondbsplitDataset(Dataset):
         return low_img, high_img
 
 
-# ============ Function to calculate mean and std ============
-def get_mean_std(dataset_path, resize_dim):
-    print("⏳ Calculating mean and standard deviation of the training dataset...")
-    temp_transform = transforms.Compose([
-        transforms.Resize(resize_dim),
-        transforms.ToTensor()
-    ])
-    
-    high_dir = os.path.join(dataset_path, 'high')
-    image_names = [f for f in os.listdir(high_dir) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-
-    mean = torch.zeros(3)
-    std = torch.zeros(3)
-    num_samples = 0
-
-    for fname in tqdm(image_names):
-        img_path = os.path.join(high_dir, fname)
-        img = Image.open(img_path).convert("RGB")
-        img_tensor = temp_transform(img)
-        
-        mean += img_tensor.mean(dim=[1, 2])
-        std += img_tensor.std(dim=[1, 2])
-        num_samples += 1
-
-    mean /= num_samples
-    std /= num_samples
-
-    print("✅ Mean and Std calculated.")
-    return mean.tolist(), std.tolist()
-
-
-# ============ Hyperparameters ============
+# ================= Hyperparameters =================
 learning_rate = 1e-4
 weight_decay = 1e-5
 num_epochs = 100
@@ -81,8 +50,9 @@ train_low_dir = "/content/cvccolondbsplit/train/low"
 val_high_dir = "/content/cvccolondbsplit/val/high"
 val_low_dir = "/content/cvccolondbsplit/val/low"
 
-# --- Calculate dataset-specific mean and std ---
-dataset_mean, dataset_std = get_mean_std(os.path.dirname(train_high_dir), resize_dim)
+# ================= Use your precomputed mean & std =================
+dataset_mean = [0.31112134, 0.18268488, 0.10600837]
+dataset_std  = [0.21178198, 0.1397511, 0.0843721]
 
 print(f"Dataset Mean: {dataset_mean}")
 print(f"Dataset Std: {dataset_std}")
@@ -117,6 +87,6 @@ def denormalize(tensor, mean, std):
     tensor = tensor * std + mean
     return torch.clamp(tensor, 0, 1)
 
-# Example usage:
+# ================= Example usage =================
 # batch_low, batch_high = next(iter(train_loader))
 # batch_low_denorm = denormalize(batch_low, dataset_mean, dataset_std)
