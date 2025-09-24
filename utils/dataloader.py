@@ -6,7 +6,7 @@ from torchvision import transforms
 from tqdm import tqdm
 import numpy as np
 
-# === Dataset ===
+# ================= Dataset =================
 class cvccolondbsplitDataset(Dataset):
     def __init__(self, low_dir, high_dir, transform=None):
         self.low_dir = low_dir
@@ -35,7 +35,7 @@ class cvccolondbsplitDataset(Dataset):
         return low_img, high_img
 
 
-# --- Function to calculate mean and std ---
+# ============ Function to calculate mean and std ============
 def get_mean_std(dataset_path, resize_dim):
     print("⏳ Calculating mean and standard deviation of the training dataset...")
     temp_transform = transforms.Compose([
@@ -66,7 +66,7 @@ def get_mean_std(dataset_path, resize_dim):
     return mean.tolist(), std.tolist()
 
 
-# ---------- Hyperparams ----------
+# ============ Hyperparameters ============
 learning_rate = 1e-4
 weight_decay = 1e-5
 num_epochs = 100
@@ -75,33 +75,48 @@ early_stopping_patience = 10
 resize_dim = (224, 224)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# === Paths ===
+# ================= Paths =================
 train_high_dir = "/content/cvccolondbsplit/train/high"
 train_low_dir = "/content/cvccolondbsplit/train/low"
 val_high_dir = "/content/cvccolondbsplit/val/high"
 val_low_dir = "/content/cvccolondbsplit/val/low"
 
 # --- Calculate dataset-specific mean and std ---
-# This is a one-time calculation.
 dataset_mean, dataset_std = get_mean_std(os.path.dirname(train_high_dir), resize_dim)
 
 print(f"Dataset Mean: {dataset_mean}")
 print(f"Dataset Std: {dataset_std}")
 
-# === Define Transforms with Normalization ===
+# ================= Transforms with Normalization =================
 transform = transforms.Compose([
     transforms.Resize(resize_dim),
     transforms.ToTensor(),
     transforms.Normalize(mean=dataset_mean, std=dataset_std)
 ])
 
-# === Create Dataset Instances ===
+# ================= Create Dataset Instances =================
 train_dataset = cvccolondbsplitDataset(train_low_dir, train_high_dir, transform=transform)
 val_dataset = cvccolondbsplitDataset(val_low_dir, val_high_dir, transform=transform)
 
-# === Create DataLoaders ===
+# ================= Create DataLoaders =================
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 print(f"Train samples: {len(train_dataset)}, Val samples: {len(val_dataset)}")
 print(f"First batch shape: {next(iter(train_loader))[0].shape}")
+
+# ================= Denormalization Function =================
+def denormalize(tensor, mean, std):
+    """
+    Correctly denormalizes a tensor using the dataset-specific mean and std.
+    tensor: [B, C, H, W]
+    mean, std: lists or tensors of length 3
+    """
+    mean = torch.tensor(mean).view(1, -1, 1, 1).to(tensor.device)
+    std = torch.tensor(std).view(1, -1, 1, 1).to(tensor.device)
+    tensor = tensor * std + mean
+    return torch.clamp(tensor, 0, 1)
+
+# Example usage:
+# batch_low, batch_high = next(iter(train_loader))
+# batch_low_denorm = denormalize(batch_low, dataset_mean, dataset_std)
